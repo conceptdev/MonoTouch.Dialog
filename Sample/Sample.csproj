@@ -107,8 +107,16 @@
     <Content Include="favorited.png" />
     <Content Include="background.png" />
     <Content Include="sample.json" />
+    <Content Include="ja.lproj\Localizable.strings" />
+    <Content Include="es.lproj\Localizable.strings" />
+    <Content Include="en.lproj\Localizable.strings" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Info.plist" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="es.lproj\" />
+    <Folder Include="ja.lproj\" />
+    <Folder Include="en.lproj\" />
   </ItemGroup>
 </Project>

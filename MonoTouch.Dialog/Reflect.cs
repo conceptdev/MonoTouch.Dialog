@@ -52,6 +52,9 @@ namespace MonoTouch.Dialog
 	
 	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property, Inherited=false)]
 	public class SkipAttribute : Attribute {}
+
+	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property, Inherited=false)]
+	public class LocalizeAttribute : Attribute {}
 	
 	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property, Inherited=false)]
 	public class PasswordAttribute : EntryAttribute {
@@ -89,7 +92,13 @@ namespace MonoTouch.Dialog
 		{
 			Caption = caption;
 		}
+		public CaptionAttribute (string caption, string localizeKey)
+		{
+			Caption = caption;
+			CaptionKey = localizeKey;
+		}
 		public string Caption;
+		public string CaptionKey;
 	}
 
 	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property, Inherited=false)]
@@ -118,7 +127,16 @@ namespace MonoTouch.Dialog
 		public float Low, High;
 		public bool ShowCaption;
 	}
-
+	
+	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property, Inherited=false)]
+	public class LocalizedStringKeyAttribute : Attribute {
+		public LocalizedStringKeyAttribute (string caption)
+		{
+			Key = caption;
+		}
+		public string Key;
+	}
+	
 	public class BindingContext : IDisposable {
 		public RootElement Root;
 		Dictionary<Element,MemberAndInstance> mappings;
@@ -203,42 +221,62 @@ namespace MonoTouch.Dialog
 		{
 			MemberInfo last_radio_index = null;
 			var members = o.GetType ().GetMembers (BindingFlags.DeclaredOnly | BindingFlags.Public |
-							       BindingFlags.NonPublic | BindingFlags.Instance);
+				BindingFlags.NonPublic | BindingFlags.Instance
+			);
 
 			Section section = null;
 			
-			foreach (var mi in members){
+			foreach (var mi in members) {
 				Type mType = GetTypeForMember (mi);
 
 				if (mType == null)
 					continue;
 
 				string caption = null;
+				string key = null; // l18n
 				object [] attrs = mi.GetCustomAttributes (false);
 				bool skip = false;
-				foreach (var attr in attrs){
+				bool localize = false;
+				foreach (var attr in attrs) {
+					if (attr is LocalizeAttribute) {
+						localize = true;
+						break;
+					}
+				}
+				foreach (var attr in attrs) {
 					if (attr is SkipAttribute || attr is System.Runtime.CompilerServices.CompilerGeneratedAttribute)
 						skip = true;
-					else if (attr is CaptionAttribute)
-						caption = ((CaptionAttribute) attr).Caption;
-					else if (attr is SectionAttribute){
+					else if (attr is CaptionAttribute) {
+						caption = ((CaptionAttribute)attr).Caption;
+						if (localize)
+							caption = NSBundle.MainBundle.LocalizedString (caption, caption);
+					} else if (attr is SectionAttribute) {
 						if (section != null)
 							root.Add (section);
 						var sa = attr as SectionAttribute;
-						section = new Section (sa.Caption, sa.Footer);
+						var header = sa.Caption;
+						var footer = sa.Footer;
+						if (localize) {
+							header = NSBundle.MainBundle.LocalizedString (header, header);
+							footer = NSBundle.MainBundle.LocalizedString (footer, footer);
+						}
+						section = new Section (header, footer);
 					}
 				}
 				if (skip)
 					continue;
 				
-				if (caption == null)
+				if (caption == null) {
 					caption = MakeCaption (mi.Name);
+					if (localize)
+						caption = NSBundle.MainBundle.LocalizedString (caption, caption);
+				}
 				
 				if (section == null)
 					section = new Section ();
 				
 				Element element = null;
-				if (mType == typeof (string)){
+				if (mType == typeof(string)) {
 					PasswordAttribute pa = null;
 					AlignmentAttribute align = null;
 					EntryAttribute ea = null;
@@ -246,7 +284,7 @@ namespace MonoTouch.Dialog
 					NSAction invoke = null;
 					bool multi = false;
 					
-					foreach (object attr in attrs){
+					foreach (object attr in attrs) {
 						if (attr is PasswordAttribute)
 							pa = attr as PasswordAttribute;
 						else if (attr is EntryAttribute)
@@ -258,10 +296,10 @@ namespace MonoTouch.Dialog
 						else if (attr is AlignmentAttribute)
 							align = attr as AlignmentAttribute;
 						
-						if (attr is OnTapAttribute){
-							string mname = ((OnTapAttribute) attr).Method;
+						if (attr is OnTapAttribute) {
+							string mname = ((OnTapAttribute)attr).Method;
 							
-							if (callbacks == null){
+							if (callbacks == null) {
 								throw new Exception ("Your class contains [OnTap] attributes, but you passed a null object for `context' in the constructor");
 							}
 							
@@ -274,12 +312,20 @@ namespace MonoTouch.Dialog
 						}
 					}
 					
-					string value = (string) GetValue (mi, o);
-					if (pa != null)
-						element = new EntryElement (caption, pa.Placeholder, value, true);
-					else if (ea != null)
-						element = new EntryElement (caption, ea.Placeholder, value) { KeyboardType = ea.KeyboardType, AutocapitalizationType = ea.AutocapitalizationType, AutocorrectionType = ea.AutocorrectionType, ClearButtonMode = ea.ClearButtonMode };
-					else if (multi)
+					
+					
+					string value = (string)GetValue (mi, o);
+					if (pa != null) {
+						var placeholder = pa.Placeholder;
+						if (localize)
+							placeholder = NSBundle.MainBundle.LocalizedString (placeholder, placeholder);
+						element = new EntryElement (caption, placeholder, value, true);
+					} else if (ea != null) {
+						var placeholder = ea.Placeholder;
+						if (localize)
+							placeholder = NSBundle.MainBundle.LocalizedString (placeholder, placeholder);
+						element = new EntryElement (caption, placeholder, value) { KeyboardType = ea.KeyboardType, AutocapitalizationType = ea.AutocapitalizationType, AutocorrectionType = ea.AutocorrectionType, ClearButtonMode = ea.ClearButtonMode };
+					} else if (multi)
 						element = new MultilineElement (caption, value);
 					else if (html != null)
 						element = new HtmlElement (caption, value);
@@ -292,36 +338,36 @@ namespace MonoTouch.Dialog
 					}
 					
 					if (invoke != null)
-						((StringElement) element).Tapped += invoke;
-				} else if (mType == typeof (float)){
-					var floatElement = new FloatElement (null, null, (float) GetValue (mi, o));
+						((StringElement)element).Tapped += invoke;
+				} else if (mType == typeof(float)) {
+					var floatElement = new FloatElement (null, null, (float)GetValue (mi, o));
 					floatElement.Caption = caption;
 					element = floatElement;
 					
-					foreach (object attr in attrs){
-						if (attr is RangeAttribute){
+					foreach (object attr in attrs) {
+						if (attr is RangeAttribute) {
 							var ra = attr as RangeAttribute;
 							floatElement.MinValue = ra.Low;
 							floatElement.MaxValue = ra.High;
 							floatElement.ShowCaption = ra.ShowCaption;
 						}
 					}
-				} else if (mType == typeof (bool)){
+				} else if (mType == typeof(bool)) {
 					bool checkbox = false;
-					foreach (object attr in attrs){
+					foreach (object attr in attrs) {
 						if (attr is CheckboxAttribute)
 							checkbox = true;
 					}
 					
 					if (checkbox)
-						element = new CheckboxElement (caption, (bool) GetValue (mi, o));
+						element = new CheckboxElement (caption, (bool)GetValue (mi, o));
 					else
-						element = new BooleanElement (caption, (bool) GetValue (mi, o));
-				} else if (mType == typeof (DateTime)){
-					var dateTime = (DateTime) GetValue (mi, o);
+						element = new BooleanElement (caption, (bool)GetValue (mi, o));
+				} else if (mType == typeof(DateTime)) {
+					var dateTime = (DateTime)GetValue (mi, o);
 					bool asDate = false, asTime = false;
 					
-					foreach (object attr in attrs){
+					foreach (object attr in attrs) {
 						if (attr is DateAttribute)
 							asDate = true;
 						else if (attr is TimeAttribute)
@@ -333,21 +379,24 @@ namespace MonoTouch.Dialog
 					else if (asTime)
 						element = new TimeElement (caption, dateTime);
 					else
-						 element = new DateTimeElement (caption, dateTime);
-				} else if (mType.IsEnum){
+						element = new DateTimeElement (caption, dateTime);
+				} else if (mType.IsEnum) {
 					var csection = new Section ();
 					ulong evalue = Convert.ToUInt64 (GetValue (mi, o), null);
 					int idx = 0;
 					int selected = 0;
 					
-					foreach (var fi in mType.GetFields (BindingFlags.Public | BindingFlags.Static)){
+					foreach (var fi in mType.GetFields (BindingFlags.Public | BindingFlags.Static)) {
 						ulong v = Convert.ToUInt64 (GetValue (fi, null));
 						
 						if (v == evalue)
 							selected = idx;
 						
-						CaptionAttribute ca = Attribute.GetCustomAttribute(fi, typeof(CaptionAttribute)) as CaptionAttribute;
-						csection.Add (new RadioElement (ca != null ? ca.Caption : MakeCaption (fi.Name)));
+						CaptionAttribute ca = Attribute.GetCustomAttribute (fi, typeof(CaptionAttribute)) as CaptionAttribute;
+						var cap = ca != null ? ca.Caption : MakeCaption (fi.Name);
+						if (localize)
+							NSBundle.MainBundle.LocalizedString (cap, cap);
+						csection.Add (new RadioElement (cap));
 						idx++;
 					}
 					

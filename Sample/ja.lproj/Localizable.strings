@@ -1,0 +1,32 @@
+"Settings" = "三Settings三";
+
+"Account Enabled" = "三";
+"Password" = "三";
+"Login" = "三";
+"Enter your password" = "三三";
+
+"Account" = "はい";
+"Your credentials" = "はい";
+"Enter your login name" = "はい";
+"Autocapitalize, autocorrect and clear button" = "はい";
+"Enter your name" = "はい";
+"Name" = "はい";
+"Time Editing" = "はい";
+"Time Samples"= "はい";
+"Enumerations" = "はい";
+"Favorite CLR type" = "はい";
+"Checkboxes" = "はい";
+"Image Selection" = "はい";
+"Multiline" = "はい";
+"This is a\nmultiline string\nall you need is the\n[Multiline] attribute" = "はい\nはい\nはい";
+"IEnumerable" = "はい";
+"Appointment" = "はい";
+"Birthday" = "はい";
+"Alarm" = "はい";
+"List Of String" = "はい";
+"Spanish" = "Espanôl";
+"English" = "Inglés";
+
+"One" = "三";
+"Two" = "三三";
+"Three" = "三三三";

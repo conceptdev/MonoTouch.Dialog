@@ -14,40 +14,48 @@ namespace Sample
 	
 	[Preserve (AllMembers=true)]
 	class Settings {
+		
 	[Section]
+		[Localize]
 		public bool AccountEnabled;
 		[Skip] public bool Hidden;
 				
 	[Section ("Account", "Your credentials")]
 		
 		[Entry ("Enter your login name")]
+		[Localize]
 		public string Login;
 		
 		[Password ("Enter your password")]
+		[Localize]
 		public string Password;
 		
 	[Section ("Autocapitalize, autocorrect and clear button")]
 		
-		[Entry (Placeholder = "Enter your name", AutocorrectionType = UITextAutocorrectionType.Yes, AutocapitalizationType = UITextAutocapitalizationType.Words, ClearButtonMode = UITextFieldViewMode.WhileEditing)]
+		[Localize][Entry (Placeholder = "Enter your name", AutocorrectionType = UITextAutocorrectionType.Yes, AutocapitalizationType = UITextAutocapitalizationType.Words, ClearButtonMode = UITextFieldViewMode.WhileEditing)]
 		public string Name;
 		
 	[Section ("Time Editing")]
-		
+		[Localize]
 		public TimeSettings TimeSamples;
 		
 	[Section ("Enumerations")]
 		
 		[Caption ("Favorite CLR type")]
+		[Localize]
 		public TypeCode FavoriteType;
 		
 	[Section ("Checkboxes")]
 		[Checkbox]
+		[Localize]
 		bool English = true;
 		
 		[Checkbox]
+		[Localize]
 		bool Spanish;
 		
 	[Section ("Image Selection")]
+		[Localize]
 		public UIImage Top;
 		public UIImage Middle;
 		public UIImage Bottom;
@@ -55,20 +63,26 @@ namespace Sample
 	[Section ("Multiline")]
 		[Caption ("This is a\nmultiline string\nall you need is the\n[Multiline] attribute")]
 		[Multiline]
+		[Localize]
 		public string multi;
 		
 	[Section ("IEnumerable")]
 		[RadioSelection ("ListOfString")] 
+		[Localize]
 		public int selected = 1;
+		[Localize]
 		public IList<string> ListOfString;
 	}
 
 	public class TimeSettings {
+		[Localize]
 		public DateTime Appointment;
 		
+		[Localize]
 		[Date]
 		public DateTime Birthday;
 		
+		[Localize]
 		[Time]
 		public DateTime Alarm;
 	}
@@ -79,7 +93,7 @@ namespace Sample
 		
 		public void DemoReflectionApi ()
 		{	
-			if (settings == null){
+			if (settings == null) {
 				var image = UIImage.FromFile ("monodevelop-32.png");
 				
 				settings = new Settings () {
@@ -94,10 +108,15 @@ namespace Sample
 					Top = image,
 					Middle = image,
 					Bottom = image,
-					ListOfString = new List<string> () { "One", "Two", "Three" }
+					ListOfString = new List<string> () { 
+						NSBundle.MainBundle.LocalizedString("One",""), 
+						NSBundle.MainBundle.LocalizedString("Two",""), 
+						NSBundle.MainBundle.LocalizedString("Three","") }
 				};
 			}
-			var bc = new BindingContext (null, settings, "Settings");
+			
+			var title = NSBundle.MainBundle.LocalizedString ("Settings", "");
+			var bc = new BindingContext (null, settings, title);
 			
 			var dv = new DialogViewController (bc.Root, true);
 			

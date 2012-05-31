@@ -1,0 +1,32 @@
+"Settings" = "Settings";
+
+"Account Enabled" = "Account Enabled";
+"Password" = "Password";
+"Login" = "Login";
+"Enter your password" = "Enter your password";
+
+"Account" = "Account";
+"Your credentials" = "Your credentials";
+"Enter your login name" = "Enter your login name";
+"Autocapitalize, autocorrect and clear button" = "Autocapitalize, autocorrect and clear button";
+"Enter your name" = "Enter your name";
+"Name" = "Name";
+"Time Editing" = "Time Editing";
+"Time Samples"= "Time Samples";
+"Enumerations" = "Enumerations";
+"Favorite CLR type" = "Favorite CLR type";
+"Checkboxes" = "Checkboxes";
+"Image Selection" = "Image Selection";
+"Multiline" = "Multiline";
+"This is a\nmultiline string\nall you need is the\n[Multiline] attribute" = "This is a\nmultiline string\nall you need is the\n[Multiline] attribute";
+"IEnumerable" = "IEnumerable";
+"Appointment" = "Appointment";
+"Birthday" = "Birthday";
+"Alarm" = "Alarm";
+"List Of String" = "List Of String";
+"Spanish" = "Spanish";
+"English" = "English";
+
+"One" = "One";
+"Two" = "Two";
+"Three" = "Three";
