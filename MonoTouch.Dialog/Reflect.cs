@@ -92,13 +92,7 @@ namespace MonoTouch.Dialog
 		{
 			Caption = caption;
 		}
-		public CaptionAttribute (string caption, string localizeKey)
-		{
-			Caption = caption;
-			CaptionKey = localizeKey;
-		}
 		public string Caption;
-		public string CaptionKey;
 	}
 
 	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property, Inherited=false)]
@@ -126,15 +120,6 @@ namespace MonoTouch.Dialog
 		}
 		public float Low, High;
 		public bool ShowCaption;
-	}
-	
-	[AttributeUsage (AttributeTargets.Field | AttributeTargets.Property, Inherited=false)]
-	public class LocalizedStringKeyAttribute : Attribute {
-		public LocalizedStringKeyAttribute (string caption)
-		{
-			Key = caption;
-		}
-		public string Key;
 	}
 	
 	public class BindingContext : IDisposable {
